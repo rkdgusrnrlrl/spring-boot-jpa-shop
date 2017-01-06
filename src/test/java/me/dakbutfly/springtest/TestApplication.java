@@ -1,16 +1,13 @@
 package me.dakbutfly.springtest;
 
-import com.google.common.base.Strings;
 import me.dakbutfly.domain.Member;
+import me.dakbutfly.service.MemberService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 
 import java.util.List;
 
@@ -20,14 +17,13 @@ import static org.junit.Assert.*;
 /**
  * Created by dakbutfly on 2017-01-04.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = "classpath:appConfig.xml")
+@RunWith(SpringRunner.class)
+@SpringBootTest
 @Transactional
 public class TestApplication {
 
-
-    @PersistenceContext
-    EntityManager em;
+    @Autowired
+    MemberService memberService;
 
     @Test
     public void Member_등록_후_번호를_반환해야함() throws Exception {
@@ -37,10 +33,12 @@ public class TestApplication {
         member.setId("rkdgusrnrlrl");
         member.setName("강현구");
 
-        Long no = register(member);
+        Long no = memberService.register(member);
 
-        assertThat(em.find(Member.class, no), is(member));
+        assertThat(memberService.findMemberByNo(no), is(member));
     }
+
+
 
     @Test
     public void 아이디로_회원을_찾을수_있어야함() throws Exception {
@@ -50,9 +48,9 @@ public class TestApplication {
         member.setId(id);
         member.setName("강현구");
 
-        Long no = register(member);
+        Long no = memberService.register(member);
         //when
-        Member findMember = findMemberById(id);
+        Member findMember = memberService.findMemberById(id);
         assertThat(findMember, is(member));
     }
 
@@ -64,12 +62,12 @@ public class TestApplication {
         String id = "rkdgusrnrlrl";
         member.setId(id);
         member.setName("강현구");
-        register(member);
+        memberService.register(member);
 
         Member member1 = new Member();
         member1.setId(id);
         member1.setName("강현구");
-        register(member1);
+        memberService.register(member1);
 
         fail("예외가 발생하지 않았습니다.");
     }
@@ -80,7 +78,7 @@ public class TestApplication {
         Member member1 = new Member();
 
         //when
-        register(member1);
+        memberService.register(member1);
 
         //assert
         fail("예외가 발생하지 않았습니다.");
@@ -92,45 +90,36 @@ public class TestApplication {
             Member member = new Member();
             member.setId("id"+i);
             member.setName("강현구"+i);
-            register(member);
+            memberService.register(member);
         }
 
-        List<Member> members = findAllMember();
+        List<Member> members = memberService.findAllMember();
         assertNotNull(members);
         assertThat(members.size(), is(10));
     }
 
     @Test
     public void 빈값에_전체회원_반환시_빈리스트_반환() throws Exception {
-        List<Member> allMember = findAllMember();
+        List<Member> allMember = memberService.findAllMember();
         assertNotNull(allMember);
         assertTrue(allMember.isEmpty());
         assertThat(allMember.size(), is(0));
     }
 
-    private List<Member> findAllMember() {
-        List<Member> members = em.createQuery("select  m from Member m", Member.class).getResultList();
-        return members;
+    public Member findMemberByNo(Long no) {
+        return memberService.findMemberByNo(no);
+    }
+
+    public List<Member> findAllMember() {
+        return memberService.findAllMember();
     }
 
 
-    private Long register(Member member) throws Exception {
-        String id = member.getId();
-        if (Strings.isNullOrEmpty(id)) throw new Exception("아이디가 없습니다.");
-        Member findMember = findMemberById(id);
-        if (findMember != null) throw new Exception("중복된 아이디입니다.");
-        em.persist(member);
-        return member.getNo();
+    public Long register(Member member) throws Exception {
+        return memberService.register(member);
     }
 
-    private Member findMemberById(String id) {
-        try {
-            Member findMember = em.createQuery("select m from Member m where m.id = :id", Member.class)
-                    .setParameter("id", id)
-                    .getSingleResult();
-            return findMember;
-        } catch (NoResultException e) {
-            return null;
-        }
+    public Member findMemberById(String id) {
+        return memberService.findMemberById(id);
     }
 }

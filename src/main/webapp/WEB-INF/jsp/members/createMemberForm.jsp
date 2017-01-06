@@ -13,8 +13,7 @@
 
 <div class="container">
 
-    <jsp:include page="../fragments/bodyHeader.jsp" />ㅊ
-
+    <jsp:include page="../fragments/bodyHeader.jsp" />
     <form role="form" action="/members/new" method="post">
         <div class="form-group">
             <label for="id">아이디</label>
