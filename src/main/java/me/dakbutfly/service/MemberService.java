@@ -6,15 +6,11 @@ import me.dakbutfly.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Service
 public class MemberService {
-    @PersistenceContext
-    private EntityManager em;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -23,7 +19,7 @@ public class MemberService {
     }
 
     public Member findMemberByNo(Long no) {
-        return em.find(Member.class, no);
+        return memberRepository.findByNo(no);
     }
 
     public List<Member> findAllMember() {
@@ -32,12 +28,16 @@ public class MemberService {
     }
 
     public Long register(Member member) throws Exception {
+        valdationMember(member);
+        memberRepository.save(member);
+        return member.getNo();
+    }
+
+    private void valdationMember(Member member) throws Exception {
         String id = member.getId();
         if (Strings.isNullOrEmpty(id)) throw new Exception("아이디가 없습니다.");
         Member findMember = findMemberById(id);
         if (findMember != null) throw new Exception("중복된 아이디입니다.");
-        memberRepository.save(member);
-        return member.getNo();
     }
 
     public Member findMemberById(String id) {

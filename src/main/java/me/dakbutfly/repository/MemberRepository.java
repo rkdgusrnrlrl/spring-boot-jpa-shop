@@ -12,5 +12,6 @@ import java.util.List;
 public interface MemberRepository extends Repository<Member, Long> {
     Member save(Member member);
     Member findById(String id);
+    Member findByNo(Long no);
     List<Member> findAll();
 }
