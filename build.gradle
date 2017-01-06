@@ -21,6 +21,7 @@ jar {
 }
 
 sourceCompatibility = 1.8
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 idea {
     module {
@@ -36,7 +37,10 @@ repositories {
 
 dependencies {
     compile("javax.servlet:jstl")
+    compile("javax.servlet:jstl")
     compile("org.apache.tomcat.embed:tomcat-embed-jasper")
+    compile("com.google.guava:guava:20.0")
+
 
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
 	compile('org.springframework.boot:spring-boot-starter-web')
