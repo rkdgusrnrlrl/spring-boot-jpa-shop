@@ -29,11 +29,9 @@ public class MemberController {
 
     @RequestMapping(value = "/members/new", method = RequestMethod.POST)
     public String creat(Model model, Member member){
-        System.out.println("MEMBEER="+member);
         try {
             memberService.register(member);
         } catch (Exception e) {
-            e.printStackTrace();
             logger.error("creat", e);
         }
         return "members/createMemberForm";

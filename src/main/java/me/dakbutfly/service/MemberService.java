@@ -23,21 +23,20 @@ public class MemberService {
     }
 
     public List<Member> findAllMember() {
-        List<Member> members = memberRepository.findAll();
-        return members;
+        return memberRepository.findAll();
     }
 
-    public Long register(Member member) throws Exception {
+    public Long register(Member member) throws IllegalStateException {
         valdationMember(member);
         memberRepository.save(member);
         return member.getNo();
     }
 
-    private void valdationMember(Member member) throws Exception {
+    private void valdationMember(Member member) throws IllegalStateException {
         String id = member.getId();
-        if (Strings.isNullOrEmpty(id)) throw new Exception("아이디가 없습니다.");
+        if (Strings.isNullOrEmpty(id)) throw new IllegalStateException("아이디가 없습니다.");
         Member findMember = findMemberById(id);
-        if (findMember != null) throw new Exception("중복된 아이디입니다.");
+        if (findMember != null) throw new IllegalStateException("중복된 아이디입니다.");
     }
 
     public Member findMemberById(String id) {
