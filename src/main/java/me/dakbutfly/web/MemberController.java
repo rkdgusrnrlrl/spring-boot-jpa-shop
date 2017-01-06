@@ -12,7 +12,7 @@ public class MemberController {
 
     @RequestMapping("/members/new")
     public String creatForm(Model model){
-        return "members/creatMemberForm";
+        return "members/createMemberForm";
     }
 
 }
