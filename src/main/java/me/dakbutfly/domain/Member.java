@@ -15,7 +15,7 @@ public class Member {
     @Id @GeneratedValue
     @Column(name = "MEM_NO")
     private Long no;
-    @Column(name="MEM_ID")
+    @Column(name="MEM_ID", unique = true)
     private String id;
     @Column(name = "MEM_NM")
     private String name;

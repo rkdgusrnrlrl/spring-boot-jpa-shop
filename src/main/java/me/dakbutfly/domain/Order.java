@@ -16,4 +16,13 @@ public class Order {
     @Column(name = "ORD_ID")
     private Long id;
     private int totalPrice;
+    @OneToOne
+    @JoinColumn(name = "MEM_ID")
+    private Member member;
+    @OneToOne
+    @JoinColumn(name = "ORL_ID")
+    private OrderLine orderLine;
+    @Column(name = "ORD_ADDRESS")
+    private String address;
+
 }

@@ -29,15 +29,12 @@ public class TestApplication {
     public void Member_등록_후_번호를_반환해야함() throws Exception {
 
         //Member 등록후 꺼내기
-        Member member = new Member();
-        member.setId("rkdgusrnrlrl");
-        member.setName("강현구");
+        Member member = Fixture.getMemberFixture("rkdgusrnrlrl", "강현구");
 
         Long no = memberService.register(member);
 
         assertThat(memberService.findMemberByNo(no), is(member));
     }
-
 
 
     @Test
@@ -64,9 +61,7 @@ public class TestApplication {
         member.setName("강현구");
         memberService.register(member);
 
-        Member member1 = new Member();
-        member1.setId(id);
-        member1.setName("강현구");
+        Member member1 = Fixture.getMemberFixture(id, "강현구");
         memberService.register(member1);
 
         fail("예외가 발생하지 않았습니다.");
@@ -87,9 +82,7 @@ public class TestApplication {
     @Test
     public void 전체_회원_반환() throws Exception {
         for (int i = 0; i < 10; i++) {
-            Member member = new Member();
-            member.setId("id"+i);
-            member.setName("강현구"+i);
+            Member member = Fixture.getMemberFixture("id" + i, "강현구" + i);
             memberService.register(member);
         }
 

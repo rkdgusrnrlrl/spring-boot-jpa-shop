@@ -1,9 +1,7 @@
 package me.dakbutfly.springtest;
 
 import me.dakbutfly.domain.Item;
-import me.dakbutfly.domain.Member;
 import me.dakbutfly.service.ItemService;
-import me.dakbutfly.service.MemberService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,9 +28,7 @@ public class TestItem {
 
     @Test
     public void 상품등록_테스트() throws Exception {
-        Item item = new Item();
-        item.setName("상품01");
-        item.setPrice(1000);
+        Item item = Fixture.getItemFixtrue();
 
         itemService.saveItem(item);
 
@@ -44,9 +40,7 @@ public class TestItem {
     @Test
     public void 상품찾기_테스트() throws Exception {
         //given
-        Item item = new Item();
-        item.setName("상품01");
-        item.setPrice(1000);
+        Item item = Fixture.getItemFixtrue();
 
         itemService.saveItem(item);
         //when
@@ -60,9 +54,7 @@ public class TestItem {
     public void 전체상품_가져오기_테스트() throws Exception {
         //given
         IntStream.range(1, 5).forEach((i) -> {
-            Item item = new Item();
-            item.setName("상품01");
-            item.setPrice(1000);
+            Item item = Fixture.getItemFixtrue();
             itemService.saveItem(item);
         });
 
