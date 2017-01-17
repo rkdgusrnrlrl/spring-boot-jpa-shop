@@ -36,6 +36,7 @@ repositories {
 
 dependencies {
     compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
+    compile group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
     compile("javax.servlet:jstl")
     compile("javax.servlet:jstl")
     compile("org.apache.tomcat.embed:tomcat-embed-jasper")
@@ -43,6 +44,7 @@ dependencies {
     compile("org.springframework.boot:spring-boot-devtools")
 
     compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile('org.springframework.data:spring-data-commons:1.12.5.RELEASE')
 	compile('org.springframework.boot:spring-boot-starter-web')
 	runtime('com.h2database:h2')
 	compileOnly('org.projectlombok:lombok')
