@@ -1,9 +1,7 @@
 package me.dakbutfly.web;
 
 import me.dakbutfly.domain.Item;
-import me.dakbutfly.domain.Member;
 import me.dakbutfly.service.ItemService;
-import me.dakbutfly.service.MemberService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +38,7 @@ public class ItemController {
 
     @RequestMapping(value = "/items", method = RequestMethod.GET)
     public String members(Model model){
-        List<Item> items = itemService.findItems();
+        List<Item> items = itemService.findAllItems();
         model.addAttribute("items", items);
         return "items/itemList";
     }

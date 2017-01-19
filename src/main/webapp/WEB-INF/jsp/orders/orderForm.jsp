@@ -32,10 +32,12 @@
             </select>
         </div>
 
+        <%--
         <div class="form-group">
             <label for="count">주문수량</label>
             <input type="number" name="count" class="form-control" id="count" placeholder="주문 수량을 입력하세요">
         </div>
+        --%>
 
         <button type="submit" class="btn btn-default">Submit</button>
     </form>

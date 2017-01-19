@@ -7,6 +7,7 @@ import me.dakbutfly.domain.OrderLine;
 import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.repository.ItemRepository;
 import me.dakbutfly.repository.OrderRepository;
+import me.dakbutfly.service.ItemService;
 import me.dakbutfly.service.OrderService;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,6 +34,8 @@ public class TestOrder extends TestService {
     private static OrderRepository orderRepository;
     private static ItemRepository itemRepository;
 
+    private static ItemService itemService;
+
 
     @BeforeClass
     public static void setup() {
@@ -47,6 +50,8 @@ public class TestOrder extends TestService {
 
         orderRepository = factory.getRepository(OrderRepository.class);
         itemRepository = factory.getRepository(ItemRepository.class);
+        itemService = new ItemService(itemRepository);
+
 
         TransactionDefinition transactionDefinition = new TransactionDefinition() {
             @Override
@@ -79,6 +84,18 @@ public class TestOrder extends TestService {
         jpaTransactionManager.getTransaction(transactionDefinition);
     }
 
+
+    @Test
+    public void JPA_테스트() throws Exception {
+        Item item = Fixture.getItemFixtrue();
+
+        itemService.saveItem(item);
+
+        Long id = item.getId();
+        assertNotNull(id);
+        assertThat(id, is(1L));
+    }
+
     @Test
     public void 등록된_주문내역_검색() throws Exception {
         //given
@@ -107,6 +124,26 @@ public class TestOrder extends TestService {
         assertNotNull(orders);
         assertThat(orders.size(), is(4));
     }
+
+
+    /*@Test
+    public void 등록_회원_번호와_상품_번호로_테스트() throws Exception {
+        //given
+        Member member = Fixture.getMemberFixture();
+
+
+        OrderService orderService = new OrderService(orderRepository);
+        Order order = getOrderFixture();
+
+        // when
+        orderService.order();
+        List<Order> orders = orderService.findOrders();
+
+        //then
+        assertNotNull(order.getId());
+        Member orderMember = order.getMember();
+        assertThat(orderMember.getId(), is(member.getId()));
+    }*/
 
     @Test
     public void 등록_테스트() throws Exception {

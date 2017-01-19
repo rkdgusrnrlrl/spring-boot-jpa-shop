@@ -74,7 +74,7 @@ public class TestItem {
         });
 
         //when
-        List<Item> items = itemService.findItems();
+        List<Item> items = itemService.findAllItems();
 
         //then
         assertNotNull(items);
