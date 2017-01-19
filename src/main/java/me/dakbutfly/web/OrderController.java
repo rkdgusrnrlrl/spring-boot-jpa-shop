@@ -11,6 +11,7 @@ public class OrderController {
 
     @RequestMapping(value = "/orders", method = RequestMethod.GET)
     public String orderList(Model model) {
-        return "";
+        System.out.println("/orders");
+        return "orders/orderList";
     }
 }

@@ -8,20 +8,13 @@ import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.repository.ItemRepository;
 import me.dakbutfly.repository.OrderRepository;
 import me.dakbutfly.service.OrderService;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.AutowireCandidateQualifier;
 import org.springframework.data.jpa.repository.support.JpaRepositoryFactory;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.TransactionDefinition;
 
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -32,82 +25,59 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by dakbutfly on 2017-01-04.
  */
 public class TestOrder extends TestService {
-    private OrderRepository orderRepository;
-    private ItemRepository itemRepository;
+    private static OrderRepository orderRepository;
+    private static ItemRepository itemRepository;
 
-    @Before
-    public void setup() {
+
+    @BeforeClass
+    public static void setup() {
+        readyForJPATest();
         EntityManager em = emf.createEntityManager();
-        //EntityManager entityManager = getEntityManager(dataSource(), hibernateProperties());
+        EntityManager entityManager = getEntityManager(dataSource(), hibernateProperties());
 
         JpaTransactionManager jpaTransactionManager = new JpaTransactionManager(emf);
         jpaTransactionManager.setDataSource(dataSource());
 
-        ListableBeanFactory beanFactory = mock(ListableBeanFactory.class);
-        PlatformTransactionManager tx = jpaTransactionManager;
-        when(beanFactory.getBean("tx")).thenReturn(tx);
-        when(beanFactory.getBean("tx",PlatformTransactionManager.class)).thenReturn(tx);
-        when(beanFactory.getBeanNamesForType(PlatformTransactionManager.class)).thenReturn(new String[] {"tx"});
-        when(beanFactory.containsBean("tx")).thenReturn(true);
-        AbstractBeanDefinition bd = mock(AbstractBeanDefinition.class);
-        AutowireCandidateQualifier candidate = mock(AutowireCandidateQualifier.class);
-        when(candidate.getAttribute("value")).thenReturn("tx");
-        when(bd.getQualifier(Qualifier.class.getName())).thenReturn(candidate);
-        //when(beanFactory.getMergedBeanDefinition("tx")).thenReturn(bd);
-        jpaTransactionManager.afterPropertiesSet();
-
-
-        TransactionalRepositoryProxyPostProcessor transactionalProxyProcessor =
-                new TransactionalRepositoryProxyPostProcessor(beanFactory, "tx",true);
-
-        JpaRepositoryFactory factory = new JpaRepositoryFactory(em);
-        factory.addRepositoryProxyPostProcessor(transactionalProxyProcessor);
+        JpaRepositoryFactory factory = new JpaRepositoryFactory(entityManager);
 
         orderRepository = factory.getRepository(OrderRepository.class);
         itemRepository = factory.getRepository(ItemRepository.class);
+
+        TransactionDefinition transactionDefinition = new TransactionDefinition() {
+            @Override
+            public int getPropagationBehavior() {
+                return PROPAGATION_REQUIRED;
+            }
+
+            @Override
+            public int getIsolationLevel() {
+                return ISOLATION_DEFAULT;
+            }
+
+            @Override
+            public int getTimeout() {
+                return TIMEOUT_DEFAULT;
+            }
+
+            @Override
+            public boolean isReadOnly() {
+                return false;
+            }
+
+            @Override
+            public String getName() {
+                return "";
+            }
+        };
+        //TransactionManager resource 에 LocalContainarEnitiyManagerFactoryBean 을 key EntityMangerHolder를 value 로 set함
+        //안하면 EnitiyManager 에 트랜젝션이 세팅 되지 않음
+        jpaTransactionManager.getTransaction(transactionDefinition);
     }
-
-
-
-    @Test
-    @Transactional
-    public void 상품등록_테스트() throws Exception {
-        Item item = Fixture.getItemFixtrue();
-
-        EntityManager em = emf.createEntityManager();
-
-        em.persist(item);
-
-
-        //itemRepository.save(item);
-        //List<Item> all = itemRepository.findAll();
-        //System.out.println(all);
-    }
-    @Test
-    public void 임시_테스트() throws Exception {
-        //given
-        Member member = Fixture.getMemberFixture();
-
-        OrderService orderService = new OrderService(orderRepository);
-        Order order = getOrderFixture();
-
-        // when
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction transaction = em.getTransaction();
-        transaction.begin();
-        em.persist(order);
-
-        List<Order> resultList = em.createQuery("SELECT i from Order i", Order.class).getResultList();
-        System.out.println(resultList);
-    }
-
-
 
     @Test
     public void 등록된_주문내역_검색() throws Exception {
@@ -115,7 +85,13 @@ public class TestOrder extends TestService {
 
         OrderService orderService = new OrderService(orderRepository);
         IntStream.range(1, 5).forEach((i) -> {
-            Order order = getOrderFixture();
+            Item item = Fixture.getItemFixtrue();
+            OrderLine orderLine = new OrderLine();
+            orderLine.setItem(item);
+            String address = "대전 서구 도마2동 333-28";
+
+            Member member = Fixture.getMemberFixture("rkdgusrnrlrl" + i, "강현구");
+            Order order = Fixture.getOrderFixture(orderLine, address, member);
             try {
                 orderService.registerOrder(order);
                 List<Order> orders = orderService.findOrders();
@@ -129,7 +105,7 @@ public class TestOrder extends TestService {
 
         //then
         assertNotNull(orders);
-        assertThat(orders.size(), is(5));
+        assertThat(orders.size(), is(4));
     }
 
     @Test
@@ -143,13 +119,11 @@ public class TestOrder extends TestService {
         // when
         orderService.registerOrder(order);
         List<Order> orders = orderService.findOrders();
-        System.out.println(orders);
 
         //then
         assertNotNull(order.getId());
-        assertThat(order.getId(), is(110L));
         Member orderMember = order.getMember();
-        assertThat(orderMember, is(member));
+        assertThat(orderMember.getId(), is(member.getId()));
     }
 
     private Order getOrderFixture() {

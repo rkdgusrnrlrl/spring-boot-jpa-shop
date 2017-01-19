@@ -2,6 +2,8 @@ package me.dakbutfly.springtest;
 
 import me.dakbutfly.domain.Item;
 import me.dakbutfly.service.ItemService;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +27,19 @@ public class TestItem {
 
     @Autowired
     ItemService itemService;
+
+    private static long start;
+
+    @BeforeClass
+    public static void start() {
+        start = System.currentTimeMillis();
+        System.out.println("시작");
+    }
+
+    @AfterClass
+    public static void end() {
+        System.out.println("걸린 시간 : "+(System.currentTimeMillis() - start));
+    }
 
     @Test
     public void 상품등록_테스트() throws Exception {

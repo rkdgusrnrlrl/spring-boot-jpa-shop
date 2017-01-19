@@ -2,6 +2,7 @@ package me.dakbutfly.springtest;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.when;
  */
 public class TestService {
     protected static EntityManagerFactory emf;
-    protected static TransactionalRepositoryProxyPostProcessor transactionalProxyProcessor;
+    private static LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 
     protected static DataSource dataSource() {
         final BasicDataSource dataSource = new BasicDataSource();
@@ -35,6 +36,21 @@ public class TestService {
         dataSource.setUsername("sa");
         dataSource.setPassword("");
         return dataSource;
+    }
+
+
+    protected static EntityManagerFactory entityManagerFactory(DataSource dataSource, Properties hibernateProperties){
+        return em.getObject();
+    }
+
+    protected static void readyLocalContainerEntityFactoryBean(DataSource dataSource, Properties hibernateProperties) {
+        em.setDataSource( dataSource );
+        em.setJpaVendorAdapter( new HibernateJpaVendorAdapter() );
+        em.setJpaProperties( hibernateProperties );
+        em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
+        em.setPackagesToScan("me.dakbutfly.domain");
+        em.setPersistenceUnitName( "mytestdomain" );
+        em.afterPropertiesSet();
     }
 
     protected static Properties hibernateProperties(){
@@ -49,44 +65,14 @@ public class TestService {
         return properties;
     }
 
-    protected static EntityManagerFactory entityManagerFactory(DataSource dataSource, Properties hibernateProperties){
-        final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-
-        em.setDataSource( dataSource );
-        em.setJpaVendorAdapter( new HibernateJpaVendorAdapter() );
-        em.setJpaProperties( hibernateProperties );
-        em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-        em.setPackagesToScan("me.dakbutfly.domain");
-        em.setPersistenceUnitName( "mytestdomain" );
-        em.afterPropertiesSet();
-
-        return em.getObject();
-    }
-
     protected static EntityManager getEntityManager(DataSource dataSource, Properties hibernateProperties) {
-        final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-
-        em.setDataSource( dataSource );
-        em.setJpaVendorAdapter( new HibernateJpaVendorAdapter() );
-        em.setJpaProperties( hibernateProperties );
-        em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-        em.setPackagesToScan("me.dakbutfly.domain");
-        em.setPersistenceUnitName( "mytestdomain" );
-        em.afterPropertiesSet();
-        Map<String, String> properties = new HashMap<>();
-        properties.put( "hibernate.dialect", "org.hibernate.dialect.H2Dialect" );
-        properties.put( "hibernate.hbm2ddl.auto", "update" );
-        properties.put( "hibernate.show_sql", "false" );
-        properties.put( "hibernate.format_sql", "false" );
-        properties.put( "hibernate.use_sql_comments", "false" );
-
-        return SharedEntityManagerCreator.createSharedEntityManager(em.getObject(), properties, true);
+        return SharedEntityManagerCreator.createSharedEntityManager(em.getObject(), hibernateProperties(), true);
     }
 
-    @BeforeClass
-    public static void start() {
+    public static void readyForJPATest(){
         DataSource dataSource = dataSource();
-        emf = entityManagerFactory(dataSource, hibernateProperties());
-
+        Properties hibernateProperties = hibernateProperties();
+        readyLocalContainerEntityFactoryBean(dataSource, hibernateProperties);
+        emf = entityManagerFactory(dataSource, hibernateProperties);
     }
 }

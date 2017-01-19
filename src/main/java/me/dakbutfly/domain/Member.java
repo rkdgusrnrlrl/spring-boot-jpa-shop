@@ -1,5 +1,6 @@
 package me.dakbutfly.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,7 +9,7 @@ import javax.persistence.*;
 /**
  * Created by dakbutfly on 2017-01-04.
  */
-@Data @NoArgsConstructor
+@Data @NoArgsConstructor @AllArgsConstructor
 @Entity
 @Table(name = "MEMBER")
 public class Member {

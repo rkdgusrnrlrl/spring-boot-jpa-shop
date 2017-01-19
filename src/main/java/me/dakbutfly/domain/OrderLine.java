@@ -15,7 +15,7 @@ public class OrderLine {
      @Id @GeneratedValue
      @Column(name = "ORL_ID")
     private Long id;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "ITEM_ID")
     private Item item;
 }
