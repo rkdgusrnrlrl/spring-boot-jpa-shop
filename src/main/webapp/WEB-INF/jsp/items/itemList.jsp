@@ -22,7 +22,7 @@
                 <th>#</th>
                 <th>상품명</th>
                 <th>가격</th>
-                <th>재고수량</th>
+                <th>수정</th>
                 <th></th>
             </tr>
             </thead>
