@@ -34,7 +34,7 @@ public class MemberController {
         } catch (Exception e) {
             logger.error("creat", e);
         }
-        return "members/createMemberForm";
+        return "redirect:/members";
     }
 
     @RequestMapping(value = "/members", method = RequestMethod.GET)
