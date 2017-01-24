@@ -1,6 +1,7 @@
 package me.dakbutfly.web;
 
 import me.dakbutfly.domain.Item;
+import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.service.ItemService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +33,11 @@ public class ItemController {
     @RequestMapping(value = "/items/new", method = RequestMethod.POST)
     public String creat(Model model, Item item){
         System.out.println("items/new[POST]");
-        itemService.saveItem(item);
+        try {
+            itemService.saveItem(item);
+        } catch (DataValidateExption dataValidateExption) {
+            return "redirect:/items/new";
+        }
         return "redirect:/items";
     }
 
@@ -59,7 +64,11 @@ public class ItemController {
      */
     @RequestMapping(value = "/items/{itemId}/edit", method = RequestMethod.POST)
     public String updateItem(@ModelAttribute("item") Item item) {
-        itemService.saveItem(item);
+        try {
+            itemService.saveItem(item);
+        } catch (DataValidateExption dataValidateExption) {
+            return "redirect:/items/"+item.getId()+"/edit";
+        }
         return "redirect:/items";
     }
 }

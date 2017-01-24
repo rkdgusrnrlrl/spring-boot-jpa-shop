@@ -1,6 +1,7 @@
 package me.dakbutfly.springtest;
 
 import me.dakbutfly.domain.Item;
+import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.service.ItemService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -52,6 +53,27 @@ public class TestItem {
         assertThat(id, is(1L));
     }
 
+    @Test(expected = DataValidateExption.class)
+    public void 상품등록_빈값등록시_DateValidateException_테스트() throws Exception {
+        Item item = new Item();
+
+        itemService.saveItem(item);
+
+        Long id = item.getId();
+        assertNotNull(id);
+        assertThat(id, is(1L));
+    }
+    @Test(expected = DataValidateExption.class)
+    public void 상품등록_가격_미등록시_DateValidateException_테스트() throws Exception {
+        Item item = new Item();
+        item.setName("상품");
+        itemService.saveItem(item);
+
+        Long id = item.getId();
+        assertNotNull(id);
+        assertThat(id, is(1L));
+    }
+
     @Test
     public void 상품찾기_테스트() throws Exception {
         //given
@@ -70,7 +92,11 @@ public class TestItem {
         //given
         IntStream.range(1, 5).forEach((i) -> {
             Item item = Fixture.getItemFixtrue();
-            itemService.saveItem(item);
+            try {
+                itemService.saveItem(item);
+            } catch (DataValidateExption dataValidateExption) {
+                dataValidateExption.printStackTrace();
+            }
         });
 
         //when
