@@ -14,15 +14,8 @@ import java.util.List;
 @Service
 
 public class ItemService {
-    private ItemRepository itemRepository;
-
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
-        this.itemRepository = itemRepository;
-    }
-
-    public ItemService() {
-    }
+    private ItemRepository itemRepository;
 
     public void saveItem(Item item) {
         itemRepository.save(item);

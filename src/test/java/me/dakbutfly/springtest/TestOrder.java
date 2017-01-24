@@ -6,8 +6,10 @@ import me.dakbutfly.domain.Order;
 import me.dakbutfly.domain.OrderLine;
 import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.repository.ItemRepository;
+import me.dakbutfly.repository.MemberRepository;
 import me.dakbutfly.repository.OrderRepository;
 import me.dakbutfly.service.ItemService;
+import me.dakbutfly.service.MemberService;
 import me.dakbutfly.service.OrderService;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,55 +35,62 @@ import static org.mockito.Mockito.mock;
 public class TestOrder extends TestService {
     private static OrderRepository orderRepository;
     private static ItemRepository itemRepository;
-
     private static ItemService itemService;
+    private static MemberService memberService;
+    private static OrderService orderService;
+    public static final TransactionDefinition TRANSACTION_DEFINITION = new TransactionDefinition() {
+        @Override
+        public int getPropagationBehavior() {
+            return PROPAGATION_REQUIRED;
+        }
+
+        @Override
+        public int getIsolationLevel() {
+            return ISOLATION_DEFAULT;
+        }
+
+        @Override
+        public int getTimeout() {
+            return TIMEOUT_DEFAULT;
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return false;
+        }
+
+        @Override
+        public String getName() {
+            return "";
+        }
+    };
 
 
     @BeforeClass
     public static void setup() {
         readyForJPATest();
-        EntityManager em = emf.createEntityManager();
         EntityManager entityManager = getEntityManager(dataSource(), hibernateProperties());
 
         JpaTransactionManager jpaTransactionManager = new JpaTransactionManager(emf);
         jpaTransactionManager.setDataSource(dataSource());
+        //TransactionManager resource 에 LocalContainarEnitiyManagerFactoryBean 을 key EntityMangerHolder를 value 로 set함
+        //안하면 EnitiyManager 에 트랜젝션이 세팅 되지 않음
+        jpaTransactionManager.getTransaction(TRANSACTION_DEFINITION);
 
         JpaRepositoryFactory factory = new JpaRepositoryFactory(entityManager);
 
         orderRepository = factory.getRepository(OrderRepository.class);
         itemRepository = factory.getRepository(ItemRepository.class);
-        itemService = new ItemService(itemRepository);
 
-
-        TransactionDefinition transactionDefinition = new TransactionDefinition() {
-            @Override
-            public int getPropagationBehavior() {
-                return PROPAGATION_REQUIRED;
-            }
-
-            @Override
-            public int getIsolationLevel() {
-                return ISOLATION_DEFAULT;
-            }
-
-            @Override
-            public int getTimeout() {
-                return TIMEOUT_DEFAULT;
-            }
-
-            @Override
-            public boolean isReadOnly() {
-                return false;
-            }
-
-            @Override
-            public String getName() {
-                return "";
-            }
-        };
-        //TransactionManager resource 에 LocalContainarEnitiyManagerFactoryBean 을 key EntityMangerHolder를 value 로 set함
-        //안하면 EnitiyManager 에 트랜젝션이 세팅 되지 않음
-        jpaTransactionManager.getTransaction(transactionDefinition);
+        try {
+            itemService = new ItemService();
+            TestHelper.injectionField(itemService, ItemRepository.class, itemRepository);
+            memberService = new MemberService();
+            TestHelper.injectionField(memberService, MemberRepository.class, factory.getRepository(MemberRepository.class));
+            orderService = getOrderService();
+        } catch (IllegalAccessException e) {
+            fail();
+        }
     }
 
 
@@ -100,11 +109,9 @@ public class TestOrder extends TestService {
     public void 등록된_주문내역_검색() throws Exception {
         //given
 
-        OrderService orderService = new OrderService(orderRepository);
+
         IntStream.range(1, 5).forEach((i) -> {
-            Item item = Fixture.getItemFixtrue();
-            OrderLine orderLine = new OrderLine();
-            orderLine.setItem(item);
+            OrderLine orderLine = getOrderLine();
             String address = "대전 서구 도마2동 333-28";
 
             Member member = Fixture.getMemberFixture("rkdgusrnrlrl" + i, "강현구");
@@ -126,31 +133,31 @@ public class TestOrder extends TestService {
     }
 
 
-    /*@Test
+    @Test
     public void 등록_회원_번호와_상품_번호로_테스트() throws Exception {
         //given
         Member member = Fixture.getMemberFixture();
+        memberService.register(member);
 
 
-        OrderService orderService = new OrderService(orderRepository);
-        Order order = getOrderFixture();
-
+        Item itemFixtrue = Fixture.getItemFixtrue();
         // when
-        orderService.order();
-        List<Order> orders = orderService.findOrders();
+        assertNotNull(member.getId());
+        Member foundMember = memberService.findMemberById(member.getId());
+        Order order = orderService.order(foundMember, itemFixtrue, "주소");
 
         //then
         assertNotNull(order.getId());
+        List<Order> orders = orderService.findOrders();
         Member orderMember = order.getMember();
         assertThat(orderMember.getId(), is(member.getId()));
-    }*/
+    }
 
     @Test
     public void 등록_테스트() throws Exception {
         //given
         Member member = Fixture.getMemberFixture();
 
-        OrderService orderService = new OrderService(orderRepository);
         Order order = getOrderFixture();
 
         // when
@@ -163,10 +170,14 @@ public class TestOrder extends TestService {
         assertThat(orderMember.getId(), is(member.getId()));
     }
 
+    private static OrderService getOrderService() throws IllegalAccessException {
+        orderService = new OrderService();
+        TestHelper.injectionField(orderService, OrderRepository.class, orderRepository);
+        return orderService;
+    }
+
     private Order getOrderFixture() {
-        Item item = Fixture.getItemFixtrue();
-        OrderLine orderLine = new OrderLine();
-        orderLine.setItem(item);
+        OrderLine orderLine = getOrderLine();
         String address = "대전 서구 도마2동 333-28";
 
         Order order = new Order();
@@ -176,11 +187,17 @@ public class TestOrder extends TestService {
         return order;
     }
 
+    private OrderLine getOrderLine() {
+        Item item = Fixture.getItemFixtrue();
+        OrderLine orderLine = new OrderLine();
+        orderLine.setItem(item);
+        return orderLine;
+    }
+
     @Test(expected = DataValidateExption.class)
     public void 등록_시_사용자추가_필수_테스트() throws Exception {
         //given
         Order order = new Order();
-        OrderService orderService = new OrderService(orderRepository);
 
         // when
         orderService.registerOrder(order);
@@ -195,7 +212,6 @@ public class TestOrder extends TestService {
 
         Order order = new Order();
         order.setMember(member);
-        OrderService orderService = new OrderService(orderRepository);
 
         // when
         orderService.registerOrder(order);
@@ -210,7 +226,6 @@ public class TestOrder extends TestService {
 
         Order order = new Order();
         order.setMember(member);
-        OrderService orderService = new OrderService(orderRepository);
         order.setOrderLine(new OrderLine());
 
         // when
@@ -229,7 +244,6 @@ public class TestOrder extends TestService {
 
         Order order = new Order();
         order.setMember(member);
-        OrderService orderService = new OrderService(orderRepository);
         OrderLine orderLine = new OrderLine();
 
         orderLine.setItem(Fixture.getItemFixtrue());

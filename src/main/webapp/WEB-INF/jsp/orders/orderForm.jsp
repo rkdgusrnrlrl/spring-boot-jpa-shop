@@ -39,6 +39,12 @@
         </div>
         --%>
 
+        <div class="form-group">
+            <label for="address">주소</label>
+            <input type="text" name="address" class="form-control" id="address" placeholder="주소 입력하세요">
+        </div>
+
+
         <button type="submit" class="btn btn-default">Submit</button>
     </form>
     <br/>

@@ -34,9 +34,6 @@
                 <th>회원명</th>
                 <th>대표상품 이름</th>
                 <th>대표상품 주문가격</th>
-                <th>대표상품 주문수량</th>
-                <th>상태</th>
-                <th>일시</th>
                 <th></th>
             </tr>
             </thead>
@@ -45,16 +42,15 @@
                 <tr>
                     <td>${item.id}</td>
                     <td>${item.member.name}</td>
-                    <td>${item.orderItems[0].item.name}</td>
-                    <td>${item.orderItems[0].orderPrice}</td>
-                    <td>${item.orderItems[0].count}</td>
-                    <td>${item.status}</td>
-                    <td>${item.orderDate}</td>
+                    <td>${item.orderLine.item.name}</td>
+                    <td>${item.totalPrice}</td>
+                    <%--
                     <td>
                         <c:if test="${item.status == 'ORDER'}">
                         <a href="/orders/${item.id}/cancel" class="btn btn-danger">주문취소</a>
                         </c:if>
                     </td>
+                    --%>
                 </tr>
             </c:forEach>
             </tbody>

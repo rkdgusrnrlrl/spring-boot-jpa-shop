@@ -1,32 +1,25 @@
 package me.dakbutfly.springtest;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.hibernate.jpa.HibernatePersistenceProvider;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.springframework.beans.factory.ListableBeanFactory;
-import org.springframework.orm.jpa.JpaTransactionManager;
+import org.slf4j.LoggerFactory;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Created by khk on 2017-01-16.
  */
 public class TestService {
     protected static EntityManagerFactory emf;
-    private static LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+    private static LocalContainerEntityManagerFactoryBean em;
 
     protected static DataSource dataSource() {
         final BasicDataSource dataSource = new BasicDataSource();
@@ -44,13 +37,20 @@ public class TestService {
     }
 
     protected static void readyLocalContainerEntityFactoryBean(DataSource dataSource, Properties hibernateProperties) {
+        em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource( dataSource );
+        setLogLevelInfo();
         em.setJpaVendorAdapter( new HibernateJpaVendorAdapter() );
         em.setJpaProperties( hibernateProperties );
         em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
         em.setPackagesToScan("me.dakbutfly.domain");
         em.setPersistenceUnitName( "mytestdomain" );
         em.afterPropertiesSet();
+    }
+
+    private static void setLogLevelInfo() {
+        Logger root = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(Level.INFO);
     }
 
     protected static Properties hibernateProperties(){
