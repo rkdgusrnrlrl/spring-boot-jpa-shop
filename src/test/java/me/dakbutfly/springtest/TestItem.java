@@ -5,6 +5,7 @@ import me.dakbutfly.exception.DataValidateExption;
 import me.dakbutfly.service.ItemService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,39 @@ public class TestItem {
         Long id = item.getId();
         assertNotNull(id);
         assertThat(id, is(1L));
+    }
+
+    @Test
+    public void 상품명으로_상품찾기() throws Exception {
+        //given
+        Item item = new Item();
+        item.setName("상품");
+        item.setPrice(1000);
+        itemService.saveItem(item);
+
+        //when
+        Item foundItem = itemService.findItemByName("상품");
+
+        //then
+        assertNotNull(foundItem);
+        assertThat(foundItem, is(item));
+    }
+
+
+    @Test(expected = DataValidateExption.class)
+    public void 상품등록_동일할_이름으로_상품_등록시_DateValidateException_테스트() throws Exception {
+        //given
+        Item item = new Item();
+        item.setName("상품");
+        item.setPrice(1000);
+        itemService.saveItem(item);
+
+        Item newItem = new Item();
+        newItem.setName("상품");
+        newItem.setPrice(1000);
+
+        //when
+        itemService.saveItem(newItem);
     }
 
     @Test

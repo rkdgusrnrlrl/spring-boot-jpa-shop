@@ -23,6 +23,7 @@ public class ItemService {
     public void saveItem(Item item) throws DataValidateExption {
         if (Strings.isNullOrEmpty(item.getName())) throw new DataValidateExption("item name is empty");
         if (item.getPrice() == null) throw new DataValidateExption("item price is null");
+        if (findItemByName(item.getName()) != null) throw new DataValidateExption("exist item name");
         itemRepository.save(item);
     }
 
@@ -32,5 +33,10 @@ public class ItemService {
 
     public List<Item> findAllItems() {
         return itemRepository.findAll();
+    }
+
+
+    public Item findItemByName(String name) {
+        return itemRepository.findByName(name);
     }
 }
